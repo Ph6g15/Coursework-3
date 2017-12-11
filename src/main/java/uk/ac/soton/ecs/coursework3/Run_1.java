@@ -37,7 +37,7 @@ import java.util.List;
 public class Run_1 {
     private static FeatureVectorClassPairArrayList featureVectorClassPairs;
 
-    public static void main( String[] args ) throws Exception {
+    public static void run1() throws Exception {
         FImage image = ImageUtilities.readF(new URL("http://static.openimaj.org/media/tutorial/sinaface.jpg"));
         DisplayUtilities.displayName(image, "SinaFace Big");
 
@@ -64,7 +64,7 @@ public class Run_1 {
     /**
      * Return guess of image class
      */
-    public static BasicClassificationResult<String> classify(FImage image, DoubleNearestNeighbours neighbours) {
+    public static BasicClassificationResult<String> getGuessResult(FImage image, DoubleNearestNeighbours neighbours) {
         final int K = 15;
         // Extract feature vector.
         // Convert feature vector to double array.
