@@ -1,4 +1,4 @@
-package uk.ac.soton.ecs.ph6g15.ch12;
+package uk.ac.soton.ecs.coursework3;
 
 import de.bwaldvogel.liblinear.SolverType;
 import org.openimaj.data.DataSource;
@@ -40,9 +40,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Example code.
+ * Best Classifier.
  */
-public class App {
+public class Run_3 {
     public static void main( String[] args ) {
         try {
             // Get randomly split sample group from Caltech 101 data.
