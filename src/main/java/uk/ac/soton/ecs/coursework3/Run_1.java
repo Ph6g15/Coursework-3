@@ -117,7 +117,7 @@ public class Run_1 {
             tinyImage.zero();
             tinyImage.addInplace(croppedImage.process(new ResizeProcessor(TINYIMAGE_SIZE, TINYIMAGE_SIZE)));
 
-            // Convert tinyImage to vector and return.
+            // Convert tinyImage to a normalised vector
             return new TinyImageDoubleFV(ArrayUtils.reshape(ArrayUtils.convertToDouble(tinyImage.pixels)));
         }
     }
