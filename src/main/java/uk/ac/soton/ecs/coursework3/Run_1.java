@@ -1,75 +1,84 @@
 package uk.ac.soton.ecs.coursework3;
 
-import net.didion.jwnl.data.Exc;
-import org.openimaj.data.DataSource;
-import org.openimaj.data.dataset.Dataset;
+import org.openimaj.data.dataset.VFSGroupDataset;
+import org.openimaj.data.dataset.VFSListDataset;
 import org.openimaj.experiment.evaluation.classification.BasicClassificationResult;
+import org.openimaj.experiment.evaluation.classification.ClassificationResult;
 import org.openimaj.feature.DoubleFV;
 import org.openimaj.feature.FeatureExtractor;
-import org.openimaj.feature.local.data.LocalFeatureListDataSource;
-import org.openimaj.feature.local.list.LocalFeatureList;
-import org.openimaj.image.DisplayUtilities;
+import org.openimaj.feature.FloatFV;
 import org.openimaj.image.FImage;
-import org.openimaj.image.ImageUtilities;
-import org.openimaj.image.annotation.evaluation.datasets.Caltech101.Record;
-import org.openimaj.image.feature.dense.gradient.dsift.ByteDSIFTKeypoint;
-import org.openimaj.image.feature.dense.gradient.dsift.PyramidDenseSIFT;
-import org.openimaj.image.feature.local.extraction.FeatureVectorExtractor;
 import org.openimaj.image.processing.resize.ResizeProcessor;
 import org.openimaj.knn.DoubleNearestNeighbours;
-import org.openimaj.knn.DoubleNearestNeighboursExact;
-import org.openimaj.ml.clustering.ByteCentroidsResult;
-import org.openimaj.ml.clustering.assignment.HardAssigner;
-import org.openimaj.ml.clustering.kmeans.ByteKMeans;
+import org.openimaj.knn.FloatNearestNeighbours;
+import org.openimaj.knn.FloatNearestNeighboursExact;
 import org.openimaj.util.array.ArrayUtils;
 import org.openimaj.util.pair.IntDoublePair;
 import org.openimaj.util.pair.IntFloatPair;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * K-Nearest Neighbour Classifier.
  */
 public class Run_1 {
-    private static FeatureVectorClassPairArrayList featureVectorClassPairs;
 
-    public static void run1() throws Exception {
-        FImage image = ImageUtilities.readF(new URL("http://static.openimaj.org/media/tutorial/sinaface.jpg"));
-        DisplayUtilities.displayName(image, "SinaFace Big");
+    public static Map<String, String> run(VFSGroupDataset<FImage> trainingData, VFSListDataset<FImage> testingData) throws Exception {
+        FeatureVectorClassPairArrayList featureVectorClassPairs = new FeatureVectorClassPairArrayList();
 
-        //
-        // For each group in training set.
-        // For each image in group.
-        // Extract tiny image feature vector from image.
-        TinyImageVectorExtractor tinyImageVectorExtractor = new TinyImageVectorExtractor();
-        TinyImageDoubleFV tinyImageVector = tinyImageVectorExtractor.extractFeature(image);
-        tinyImageVector.normaliseFV();
-        // Add feature and class name to array.
+        // For each class in training set.
+        for (String className : trainingData.getGroups()) {
+            // For each image in group.
+            for (FImage image : trainingData.get(className)) {
+                // Extract tiny image feature vector from image.
+                TinyImageVectorExtractor tinyImageVectorExtractor = new TinyImageVectorExtractor();
+                NormalisableFloatFV tinyImageVector = tinyImageVectorExtractor.extractFeature(image);
+                tinyImageVector = tinyImageVector.getNormalised();
+                // Add feature and class name to array.
+                featureVectorClassPairs.add(new FeatureVectorClassPair(tinyImageVector.values, className));
+            }
+        }
         // Get k-nearest neighbour using training feature vectors.
-        double [][] trainingVectors = featureVectorClassPairs.toFeatureVectorArray();
+        float [][] trainingVectors = featureVectorClassPairs.toFeatureVectorArray();
+        FloatNearestNeighboursExact kNearestNeighbours = new FloatNearestNeighboursExact(trainingVectors);
 
-        DoubleNearestNeighboursExact kNearestNeighbours = new DoubleNearestNeighboursExact(trainingVectors);
+        // Perform guesses.
+        double highestConfidence = 0;
+        double confidence;
+        Map<String, String> predictions = new HashMap<>();
+        for (int i = 0; i < testingData.size(); i++) {
+            FImage testImage = testingData.get(i);
+            String imageName = testingData.getID(i);
 
+            ClassificationResult<String> prediction = getGuess(testImage, kNearestNeighbours);
 
-    }
+            // Add prediction to map.
+            for (String imageClass : prediction.getPredictedClasses()) {
+                confidence = prediction.getConfidence(imageClass);
+                if (confidence > highestConfidence) {
+                    highestConfidence = confidence;
+                }
+            }
+            predictions.put(imageName, String.valueOf(highestConfidence));
+        }
 
-    public static void writePredictions(HashMap<String, String> predictions) {
-        // Write predictions to file.
+        return predictions;
     }
 
     /**
      * Return guess of image class
      */
-    public static BasicClassificationResult<String> getGuessResult(FImage image, DoubleNearestNeighbours neighbours) {
+    private static BasicClassificationResult<String> getGuess(FImage image, FloatNearestNeighbours neighbours) {
         final int K = 15;
         // Extract feature vector.
+        TinyImageVectorExtractor tinyImageVectorExtractor = new TinyImageVectorExtractor();
         // Convert feature vector to double array.
+        FloatFV featureVector = tinyImageVectorExtractor.extractFeature(image);
+        featureVector.normaliseFV();
         // Get k-nearest neighbours.
-//        List<IntDoublePair> kNearestNeighbours = neighbours.searchKNN(featureVector, K);
+        List<IntFloatPair> kNearestNeighbours = neighbours.searchKNN(featureVector.values, K);
         // Map containing how many neighbours there are of each class.
         // For each neighbour.
         // Get class of neighbour.
@@ -82,32 +91,11 @@ public class Run_1 {
         return null;
     }
 
-    // Build HardAssigner by performing K-Means clustering on a sample of the SIFT features.
-    static HardAssigner<byte[], float[], IntFloatPair> trainQuantiser(Dataset<Record<FImage>> sample, PyramidDenseSIFT<FImage> pdsift) {
-        List<LocalFeatureList<ByteDSIFTKeypoint>> allkeys = new ArrayList<>();
-
-        for (Record<FImage> rec : sample) {
-            FImage img = rec.getImage();
-
-            pdsift.analyseImage(img);
-            allkeys.add(pdsift.getByteKeypoints(0.005f));
-        }
-
-        if (allkeys.size() > 10000)
-            allkeys = allkeys.subList(0, 10000);
-
-        ByteKMeans km = ByteKMeans.createKDTreeEnsemble(300);
-        DataSource<byte[]> datasource = new LocalFeatureListDataSource<>(allkeys);
-        ByteCentroidsResult result = km.cluster(datasource);
-
-        return result.defaultHardAssigner();
-    }
-
-    static class TinyImageVectorExtractor implements FeatureExtractor<DoubleFV, FImage> {
+    static class TinyImageVectorExtractor implements FeatureExtractor<FloatFV, FImage> {
         public static final int TINYIMAGE_SIZE = 16;
 
         @Override
-        public TinyImageDoubleFV extractFeature(FImage image) {
+        public NormalisableFloatFV extractFeature(FImage image) {
             // Crop image.
             FImage tinyImage = new FImage(TINYIMAGE_SIZE, TINYIMAGE_SIZE);
             int cropSize = image.getHeight() < image.getWidth() ? image.getHeight() : image.getWidth();
@@ -118,7 +106,7 @@ public class Run_1 {
             tinyImage.addInplace(croppedImage.process(new ResizeProcessor(TINYIMAGE_SIZE, TINYIMAGE_SIZE)));
 
             // Convert tinyImage to a normalised vector
-            return new TinyImageDoubleFV(ArrayUtils.reshape(ArrayUtils.convertToDouble(tinyImage.pixels)));
+            return new NormalisableFloatFV(ArrayUtils.reshape(ArrayUtils.convertToFloat(tinyImage.pixels)));
         }
     }
 }

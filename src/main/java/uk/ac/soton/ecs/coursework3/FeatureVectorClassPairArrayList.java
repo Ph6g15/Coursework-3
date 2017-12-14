@@ -8,8 +8,8 @@ public class FeatureVectorClassPairArrayList extends ArrayList<FeatureVectorClas
      *
      * @return 2D array of feature vectors
      */
-    public double[][] toFeatureVectorArray() {
-        double[][] featureVectorArray = new double[this.size()][];
+    public float[][] toFeatureVectorArray() {
+        float[][] featureVectorArray = new float[this.size()][];
         for (int i = 0; i < this.size(); i++) {
             featureVectorArray[i] = this.get(i).featureVector;
         }

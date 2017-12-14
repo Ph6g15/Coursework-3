@@ -2,10 +2,7 @@ package uk.ac.soton.ecs.coursework3;
 
 import de.bwaldvogel.liblinear.SolverType;
 import org.openimaj.data.DataSource;
-import org.openimaj.data.dataset.Dataset;
-import org.openimaj.data.dataset.GroupedDataset;
-import org.openimaj.data.dataset.ListDataset;
-import org.openimaj.data.dataset.VFSListDataset;
+import org.openimaj.data.dataset.*;
 import org.openimaj.experiment.dataset.sampling.GroupSampler;
 import org.openimaj.experiment.dataset.sampling.GroupedUniformRandomisedSampler;
 import org.openimaj.experiment.dataset.split.GroupedRandomSplitter;
@@ -43,31 +40,29 @@ import java.util.Map;
  * Best Classifier.
  */
 public class Run_3 {
-    public static void main( String[] args ) {
-        try {
-            // Get randomly split sample group from Caltech 101 data.
-            GroupedDataset<String, VFSListDataset<Record<FImage>>, Record<FImage>> allData = Caltech101.getData(ImageUtilities.FIMAGE_READER);
-            GroupedDataset<String, ListDataset<Record<FImage>>, Record<FImage>> data = GroupSampler.sample(allData, 5, false);
-            GroupedRandomSplitter<String, Record<FImage>> splits = new GroupedRandomSplitter<>(data, 15, 0, 15);
-            // Perform pyramid dense SIFT to apply normal dense SIFT to different sized windows.
-            DenseSIFT dsift = new DenseSIFT(5, 7);
-            PyramidDenseSIFT<FImage> pdsift = new PyramidDenseSIFT<>(dsift, 6f, 7);
-            // Train quantiser with random sample of 30 images across the training set.
-            HardAssigner<byte[], float[], IntFloatPair> assigner = trainQuantiser(GroupedUniformRandomisedSampler.sample(splits.getTrainingDataset(), 30), pdsift);
-            // Construct PHOW extractor.
-            FeatureExtractor<DoubleFV, Record<FImage>> extractor = new PHOWExtractor(pdsift, assigner);
-            // Create and train classifier.
-            LiblinearAnnotator<Record<FImage>, String> ann = new LiblinearAnnotator<>(extractor, Mode.MULTICLASS, SolverType.L2R_L2LOSS_SVC, 1.0, 0.00001);
-            ann.train(splits.getTrainingDataset());
-            //
-            ClassificationEvaluator<CMResult<String>, String, Record<FImage>> eval = new ClassificationEvaluator<>(ann, splits.getTestDataset(), new CMAnalyser<Record<FImage>, String>(CMAnalyser.Strategy.SINGLE));
+    public static Map<String, String> run(VFSGroupDataset<FImage> trainingData, VFSListDataset<FImage> testingData) throws Exception {
+        // Get randomly split sample group from Caltech 101 data.
+        GroupedDataset<String, VFSListDataset<Record<FImage>>, Record<FImage>> allData = Caltech101.getData(ImageUtilities.FIMAGE_READER);
+        GroupedDataset<String, ListDataset<Record<FImage>>, Record<FImage>> data = GroupSampler.sample(allData, 5, false);
+        GroupedRandomSplitter<String, Record<FImage>> splits = new GroupedRandomSplitter<>(data, 15, 0, 15);
+        // Perform pyramid dense SIFT to apply normal dense SIFT to different sized windows.
+        DenseSIFT dsift = new DenseSIFT(5, 7);
+        PyramidDenseSIFT<FImage> pdsift = new PyramidDenseSIFT<>(dsift, 6f, 7);
+        // Train quantiser with random sample of 30 images across the training set.
+        HardAssigner<byte[], float[], IntFloatPair> assigner = trainQuantiser(GroupedUniformRandomisedSampler.sample(splits.getTrainingDataset(), 30), pdsift);
+        // Construct PHOW extractor.
+        FeatureExtractor<DoubleFV, Record<FImage>> extractor = new PHOWExtractor(pdsift, assigner);
+        // Create and train classifier.
+        LiblinearAnnotator<Record<FImage>, String> ann = new LiblinearAnnotator<>(extractor, Mode.MULTICLASS, SolverType.L2R_L2LOSS_SVC, 1.0, 0.00001);
+        ann.train(splits.getTrainingDataset());
+        //
+        ClassificationEvaluator<CMResult<String>, String, Record<FImage>> eval = new ClassificationEvaluator<>(ann, splits.getTestDataset(), new CMAnalyser<Record<FImage>, String>(CMAnalyser.Strategy.SINGLE));
 
-            Map<Record<FImage>, ClassificationResult<String>> guesses = eval.evaluate();
-            CMResult<String> result = eval.analyse(guesses);
-            System.out.println(result);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Map<Record<FImage>, ClassificationResult<String>> guesses = eval.evaluate();
+        CMResult<String> result = eval.analyse(guesses);
+        System.out.println(result);
+
+        return null;
     }
 
     // Build HardAssigner by performing K-Means clusterin on a sample of the SIFT features.
