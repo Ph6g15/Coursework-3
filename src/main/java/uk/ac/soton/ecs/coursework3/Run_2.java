@@ -58,13 +58,13 @@ public class Run_2 {
 
         // Perform guesses.
 
-        double highestConfidence = 0;
-        double confidence;
+
         ArrayList<String> predictions = new ArrayList<>();
         for (int i = 0; i < testingData.size(); i++) {
             FImage testImage = testingData.get(i);
             String imageName = testingData.getID(i);
-
+            double highestConfidence = 0;
+            double confidence;
             ClassificationResult<String> prediction = annotator.classify(testImage);
             String bestguessSoFar = "unknown";
             // Add prediction to map.
