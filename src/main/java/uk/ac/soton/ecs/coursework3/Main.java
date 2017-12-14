@@ -19,7 +19,7 @@ public class Main {
         VFSGroupDataset<FImage> trainingData = null;
         VFSListDataset<FImage> testingData = null;
         try {
-            trainingData = new VFSGroupDataset<>("C:\\Users\\PiersEpsilon\\Coursework-3\\training", ImageUtilities.FIMAGE_READER);
+            trainingData = new VFSGroupDataset<>("C:\\Users\\PiersEpsilon\\Coursework-3\\133", ImageUtilities.FIMAGE_READER);
             testingData = new VFSListDataset<>("zip:http://comp3204.ecs.soton.ac.uk/cw/testing.zip", ImageUtilities.FIMAGE_READER);
         } catch (FileSystemException e) {
             System.err.println("Could not load data from URL. Maybe the website is down or has moved.");

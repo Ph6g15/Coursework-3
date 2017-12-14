@@ -26,9 +26,7 @@ import org.openimaj.ml.kernel.HomogeneousKernelMap;
 import org.openimaj.util.pair.IntFloatPair;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Best Classifier.
