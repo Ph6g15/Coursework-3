@@ -53,23 +53,25 @@ public class Run_3 {
         annotator.train(trainingData);
 
         // Convert guesses to output format.
-        double highestConfidence = 0;
-        double confidence;
+
         ArrayList<String> predictions = new ArrayList<String>();
         for (int i = 0; i < testingData.size(); i++) {
             FImage testImage = testingData.get(i);
             String imageName = testingData.getID(i);
-
+            double highestConfidence = 0;
+            double confidence;
             ClassificationResult<String> prediction = annotator.classify(testImage);
 
             // Add prediction to map.
+            String bestguessSoFar = "unknown";
             for (String imageClass : prediction.getPredictedClasses()) {
                 confidence = prediction.getConfidence(imageClass);
                 if (confidence > highestConfidence) {
                     highestConfidence = confidence;
+                    bestguessSoFar = imageClass;
                 }
             }
-            predictions.add(imageName+ " " +String.valueOf(highestConfidence));
+            predictions.add(imageName+ " " +bestguessSoFar);
         }
 
         return predictions;

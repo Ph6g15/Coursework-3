@@ -39,7 +39,7 @@ public class Run_2 {
     /**
      * Size of the moving patch.
      */
-    private static final int PATCH_SIZE = 12;
+    private static final int PATCH_SIZE = 24;
 
     /**
      * Linear classifier using bags of visual words features based on
@@ -50,7 +50,7 @@ public class Run_2 {
      */
     public static ArrayList<String> run(VFSGroupDataset<FImage> trainingData, VFSListDataset<FImage> testingData) throws Exception {
         // Train assigner.
-        HardAssigner<float[], float[], IntFloatPair> assigner = trainQuantiser(testingData, 500);
+        HardAssigner<float[], float[], IntFloatPair> assigner = trainQuantiser(testingData, 250);
         // Train linear classifier
         FeatureExtractor<DoubleFV, FImage> featureExtractor = new ClusteredPatchFeatureExtractor(assigner);
         LiblinearAnnotator<FImage, String> annotator = new LiblinearAnnotator<>(featureExtractor, LiblinearAnnotator.Mode.MULTICLASS, SolverType.L2R_L2LOSS_SVC, 1, 0.00001);
@@ -58,23 +58,24 @@ public class Run_2 {
 
         // Perform guesses.
 
-        double highestConfidence = 0;
-        double confidence;
+
         ArrayList<String> predictions = new ArrayList<>();
         for (int i = 0; i < testingData.size(); i++) {
             FImage testImage = testingData.get(i);
             String imageName = testingData.getID(i);
-
+            double highestConfidence = 0;
+            double confidence;
             ClassificationResult<String> prediction = annotator.classify(testImage);
-
+            String bestguessSoFar = "unknown";
             // Add prediction to map.
             for (String imageClass : prediction.getPredictedClasses()) {
                 confidence = prediction.getConfidence(imageClass);
                 if (confidence > highestConfidence) {
                     highestConfidence = confidence;
+                    bestguessSoFar = imageClass;
                 }
             }
-            predictions.add(imageName + " " + String.valueOf(highestConfidence));
+            predictions.add(imageName + " " + bestguessSoFar);
         }
 
         return predictions;
@@ -105,7 +106,6 @@ public class Run_2 {
 
         // Perform K-means clustering.
         FloatCentroidsResult centroidsResult = kMeans.cluster(featureVectors.toArray(new float[][]{}));
-
         return centroidsResult.defaultHardAssigner();
     }
 
