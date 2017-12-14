@@ -2,14 +2,10 @@ package uk.ac.soton.ecs.coursework3;
 
 import de.bwaldvogel.liblinear.SolverType;
 import org.openimaj.data.DataSource;
-import org.openimaj.data.dataset.*;
-import org.openimaj.experiment.dataset.sampling.GroupSampler;
-import org.openimaj.experiment.dataset.sampling.GroupedUniformRandomisedSampler;
-import org.openimaj.experiment.dataset.split.GroupedRandomSplitter;
-import org.openimaj.experiment.evaluation.classification.ClassificationEvaluator;
+import org.openimaj.data.dataset.Dataset;
+import org.openimaj.data.dataset.VFSGroupDataset;
+import org.openimaj.data.dataset.VFSListDataset;
 import org.openimaj.experiment.evaluation.classification.ClassificationResult;
-import org.openimaj.experiment.evaluation.classification.analysers.confusionmatrix.CMAnalyser;
-import org.openimaj.experiment.evaluation.classification.analysers.confusionmatrix.CMResult;
 import org.openimaj.feature.DoubleFV;
 import org.openimaj.feature.FeatureExtractor;
 import org.openimaj.feature.SparseIntFV;
@@ -20,12 +16,13 @@ import org.openimaj.image.feature.dense.gradient.dsift.ByteDSIFTKeypoint;
 import org.openimaj.image.feature.dense.gradient.dsift.DenseSIFT;
 import org.openimaj.image.feature.dense.gradient.dsift.PyramidDenseSIFT;
 import org.openimaj.image.feature.local.aggregate.BagOfVisualWords;
-import org.openimaj.image.feature.local.aggregate.BlockSpatialAggregator;
+import org.openimaj.image.feature.local.aggregate.PyramidSpatialAggregator;
 import org.openimaj.ml.annotation.linear.LiblinearAnnotator;
 import org.openimaj.ml.annotation.linear.LiblinearAnnotator.Mode;
 import org.openimaj.ml.clustering.ByteCentroidsResult;
 import org.openimaj.ml.clustering.assignment.HardAssigner;
 import org.openimaj.ml.clustering.kmeans.ByteKMeans;
+import org.openimaj.ml.kernel.HomogeneousKernelMap;
 import org.openimaj.util.pair.IntFloatPair;
 
 import java.util.ArrayList;
@@ -39,14 +36,15 @@ import java.util.Map;
 public class Run_3 {
     public static Map<String, String> run(VFSGroupDataset<FImage> trainingData, VFSListDataset<FImage> testingData) throws Exception {
         // Perform pyramid dense SIFT to apply normal dense SIFT to different sized windows.
-        DenseSIFT dsift = new DenseSIFT(5, 7);
-        PyramidDenseSIFT<FImage> pdsift = new PyramidDenseSIFT<>(dsift, 6f, 7);
+        DenseSIFT dsift = new DenseSIFT(3, 7);
+        PyramidDenseSIFT<FImage> pdsift = new PyramidDenseSIFT<>(dsift, 6f, 4, 6, 8, 10);
         // Train quantiser with random sample of 30 images across the training set.
         HardAssigner<byte[], float[], IntFloatPair> assigner = trainQuantiser(trainingData, pdsift);
         // Construct PHOW extractor.
+        HomogeneousKernelMap kernelMap = new HomogeneousKernelMap(HomogeneousKernelMap.KernelType.Chi2, HomogeneousKernelMap.WindowType.Rectangular);
         FeatureExtractor<DoubleFV, FImage> extractor = new PHOWExtractor(pdsift, assigner);
         // Create and train classifier.
-        LiblinearAnnotator<FImage, String> annotator = new LiblinearAnnotator<>(extractor, Mode.MULTICLASS, SolverType.L2R_L2LOSS_SVC, 1.0, 0.00001);
+        LiblinearAnnotator<FImage, String> annotator = new LiblinearAnnotator<>(kernelMap.createWrappedExtractor(extractor), Mode.MULTICLASS, SolverType.L2R_L2LOSS_SVC, 1.0, 0.00001);
         annotator.train(trainingData);
 
         // Convert guesses to output format.
@@ -109,8 +107,7 @@ public class Run_3 {
 
             BagOfVisualWords<byte[]> bovw = new BagOfVisualWords<>(assigner);
 
-            BlockSpatialAggregator<byte[], SparseIntFV> spatial = new BlockSpatialAggregator<>(
-                    bovw, 2, 2);
+            PyramidSpatialAggregator<byte[], SparseIntFV> spatial = new PyramidSpatialAggregator<>(bovw, 2, 4);
 
             return spatial.aggregate(pdsift.getByteKeypoints(0.015f), image.getBounds()).normaliseFV();
         }
