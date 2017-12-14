@@ -77,11 +77,17 @@ public class Run_3 {
         return predictions;
     }
 
-    // Build HardAssigner by performing K-Means clustering on a sample of the SIFT features.
-    static HardAssigner<byte[], float[], IntFloatPair> trainQuantiser(Dataset<FImage> sample, PyramidDenseSIFT<FImage> pdsift) {
+    /**
+     * Build HardAssigner by performing K-Means clustering on a trainingData of the SIFT features.
+     *
+     * @param trainingData Data to train the assigner on.
+     * @param pdsift Pyramid dense SIFT.
+     */
+    // Build HardAssigner by performing K-Means clustering on the training data SIFT features.
+    static HardAssigner<byte[], float[], IntFloatPair> trainQuantiser(Dataset<FImage> trainingData, PyramidDenseSIFT<FImage> pdsift) {
         List<LocalFeatureList<ByteDSIFTKeypoint>> allkeys = new ArrayList<>();
 
-        for (FImage rec : sample) {
+        for (FImage rec : trainingData) {
             FImage img = rec.getImage();
 
             pdsift.analyseImage(img);
