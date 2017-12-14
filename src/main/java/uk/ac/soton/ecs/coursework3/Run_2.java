@@ -4,15 +4,16 @@ import de.bwaldvogel.liblinear.SolverType;
 import org.openimaj.data.dataset.Dataset;
 import org.openimaj.data.dataset.VFSGroupDataset;
 import org.openimaj.data.dataset.VFSListDataset;
-import org.openimaj.experiment.evaluation.classification.BasicClassificationResult;
 import org.openimaj.experiment.evaluation.classification.ClassificationResult;
 import org.openimaj.feature.DoubleFV;
 import org.openimaj.feature.FeatureExtractor;
-import org.openimaj.feature.FloatFV;
+import org.openimaj.feature.SparseIntFV;
 import org.openimaj.feature.local.LocalFeature;
 import org.openimaj.feature.local.LocalFeatureImpl;
 import org.openimaj.feature.local.SpatialLocation;
 import org.openimaj.image.FImage;
+import org.openimaj.image.feature.local.aggregate.BagOfVisualWords;
+import org.openimaj.image.feature.local.aggregate.BlockSpatialAggregator;
 import org.openimaj.image.pixel.sampling.RectangleSampler;
 import org.openimaj.math.geometry.shape.Rectangle;
 import org.openimaj.ml.annotation.linear.LiblinearAnnotator;
@@ -21,7 +22,6 @@ import org.openimaj.ml.clustering.assignment.HardAssigner;
 import org.openimaj.ml.clustering.kmeans.FloatKMeans;
 import org.openimaj.util.array.ArrayUtils;
 import org.openimaj.util.pair.IntFloatPair;
-import org.openrdf.query.algebra.Str;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,7 +39,7 @@ public class Run_2 {
         // Train assigner.
         HardAssigner<float[], float[], IntFloatPair> assigner = trainQuantiser(testingData, 500);
         // Train linear classifier
-        FeatureExtractor<FloatFV, FImage> featureExtractor = new ClusteredPatchFeatureExtractor(assigner);
+        FeatureExtractor<DoubleFV, FImage> featureExtractor = new ClusteredPatchFeatureExtractor(assigner);
         LiblinearAnnotator<FImage, String> annotator = new LiblinearAnnotator<>(featureExtractor, LiblinearAnnotator.Mode.MULTICLASS, SolverType.L2R_L2LOSS_SVC, 1, 0.00001);
         annotator.train(trainingData);
 
@@ -73,9 +73,9 @@ public class Run_2 {
         // For each image in the sample.
         for (FImage image : sample) {
             // Sample patches of image as features.
-            List<LocalFeature<SpatialLocation, NormalisableFloatFV>> sampleList = extractPatchFeatures(image, STEP_SIZE, PATCH_SIZE);
+            List<LocalFeature<SpatialLocation, CenterableNormalisableFloatFV>> sampleList = extractPatchFeatures(image, STEP_SIZE, PATCH_SIZE);
             // Add values of features to list.
-            for (LocalFeature<SpatialLocation, NormalisableFloatFV> localFeature : sampleList) {
+            for (LocalFeature<SpatialLocation, CenterableNormalisableFloatFV> localFeature : sampleList) {
                 featureVectors.add(localFeature.getFeatureVector().values);
             }
         }
@@ -89,8 +89,8 @@ public class Run_2 {
         return centroidsResult.defaultHardAssigner();
     }
 
-    private static List<LocalFeature<SpatialLocation, NormalisableFloatFV>> extractPatchFeatures(FImage image, float step, float patchSize) {
-        List<LocalFeature<SpatialLocation, NormalisableFloatFV>> patchFeatures = new ArrayList<>();
+    private static List<LocalFeature<SpatialLocation, CenterableNormalisableFloatFV>> extractPatchFeatures(FImage image, float step, float patchSize) {
+        List<LocalFeature<SpatialLocation, CenterableNormalisableFloatFV>> patchFeatures = new ArrayList<>();
 
         // Create image patch sampler.
         RectangleSampler rectangleSampler = new RectangleSampler(image, step, step, patchSize, patchSize);
@@ -100,11 +100,11 @@ public class Run_2 {
             // Get patch from image.
             FImage patch = image.extractROI(rectangle);
             // Convert patch to a feature vector.
-            NormalisableFloatFV featureVector = new NormalisableFloatFV(ArrayUtils.reshape(patch.pixels));
+            CenterableNormalisableFloatFV featureVector = new CenterableNormalisableFloatFV(ArrayUtils.reshape(patch.pixels));
             // Get feature location.
             SpatialLocation location = new SpatialLocation(rectangle.x, rectangle.y);
             // Construct feature with normalised feature vector.
-            LocalFeature<SpatialLocation, NormalisableFloatFV> localFeature = new LocalFeatureImpl<>(location, featureVector.getNormalised());
+            LocalFeature<SpatialLocation, CenterableNormalisableFloatFV> localFeature = new LocalFeatureImpl<>(location, featureVector.getNormalised());
             // Add feature to list.
             patchFeatures.add(localFeature);
         }
@@ -113,7 +113,7 @@ public class Run_2 {
         return patchFeatures;
     }
 
-    static class ClusteredPatchFeatureExtractor implements FeatureExtractor<FloatFV, FImage> {
+    static class ClusteredPatchFeatureExtractor implements FeatureExtractor<DoubleFV, FImage> {
         HardAssigner<float[], float[], IntFloatPair> assigner;
 
         public ClusteredPatchFeatureExtractor(HardAssigner<float[], float[], IntFloatPair> assigner)
@@ -121,10 +121,19 @@ public class Run_2 {
             this.assigner = assigner;
         }
 
-        public FloatFV extractFeature(FImage object) {
+        public DoubleFV extractFeature(FImage object) {
             // Get bag of visual words from assigner.
             // Group features into blocks using bag of visual words.
-            return null;
+            FImage image = object.getImage();
+
+
+            BagOfVisualWords<float[]> bovw = new BagOfVisualWords<>(assigner);
+
+            BlockSpatialAggregator<float[], SparseIntFV> spatial = new BlockSpatialAggregator<>(
+                    bovw, 2, 2);
+
+            return spatial.aggregate(extractPatchFeatures(image, STEP_SIZE, PATCH_SIZE), image.getBounds()).normaliseFV();
+
         }
     }
 }

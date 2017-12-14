@@ -4,16 +4,13 @@ import org.openimaj.data.dataset.VFSGroupDataset;
 import org.openimaj.data.dataset.VFSListDataset;
 import org.openimaj.experiment.evaluation.classification.BasicClassificationResult;
 import org.openimaj.experiment.evaluation.classification.ClassificationResult;
-import org.openimaj.feature.DoubleFV;
 import org.openimaj.feature.FeatureExtractor;
 import org.openimaj.feature.FloatFV;
 import org.openimaj.image.FImage;
 import org.openimaj.image.processing.resize.ResizeProcessor;
-import org.openimaj.knn.DoubleNearestNeighbours;
 import org.openimaj.knn.FloatNearestNeighbours;
 import org.openimaj.knn.FloatNearestNeighboursExact;
 import org.openimaj.util.array.ArrayUtils;
-import org.openimaj.util.pair.IntDoublePair;
 import org.openimaj.util.pair.IntFloatPair;
 
 import java.util.HashMap;
@@ -34,7 +31,7 @@ public class Run_1 {
             for (FImage image : trainingData.get(className)) {
                 // Extract tiny image feature vector from image.
                 TinyImageVectorExtractor tinyImageVectorExtractor = new TinyImageVectorExtractor();
-                NormalisableFloatFV tinyImageVector = tinyImageVectorExtractor.extractFeature(image);
+                CenterableNormalisableFloatFV tinyImageVector = tinyImageVectorExtractor.extractFeature(image);
                 tinyImageVector = tinyImageVector.getNormalised();
                 // Add feature and class name to array.
                 featureVectorClassPairs.add(new FeatureVectorClassPair(tinyImageVector.values, className));
@@ -81,6 +78,7 @@ public class Run_1 {
         List<IntFloatPair> kNearestNeighbours = neighbours.searchKNN(featureVector.values, K);
         // Map containing how many neighbours there are of each class.
         // For each neighbour.
+
         // Get class of neighbour.
         // Increment count for class.
         // Convert map to list in order to sort.
@@ -95,7 +93,7 @@ public class Run_1 {
         public static final int TINYIMAGE_SIZE = 16;
 
         @Override
-        public NormalisableFloatFV extractFeature(FImage image) {
+        public CenterableNormalisableFloatFV extractFeature(FImage image) {
             // Crop image.
             FImage tinyImage = new FImage(TINYIMAGE_SIZE, TINYIMAGE_SIZE);
             int cropSize = image.getHeight() < image.getWidth() ? image.getHeight() : image.getWidth();
@@ -106,7 +104,7 @@ public class Run_1 {
             tinyImage.addInplace(croppedImage.process(new ResizeProcessor(TINYIMAGE_SIZE, TINYIMAGE_SIZE)));
 
             // Convert tinyImage to a normalised vector
-            return new NormalisableFloatFV(ArrayUtils.reshape(ArrayUtils.convertToFloat(tinyImage.pixels)));
+            return new CenterableNormalisableFloatFV(ArrayUtils.reshape(ArrayUtils.convertToFloat(tinyImage.pixels)));
         }
     }
 }

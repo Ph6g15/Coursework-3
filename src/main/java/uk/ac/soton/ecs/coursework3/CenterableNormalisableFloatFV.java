@@ -2,16 +2,16 @@ package uk.ac.soton.ecs.coursework3;
 
 import org.openimaj.feature.FloatFV;
 
-public class NormalisableFloatFV extends FloatFV {
-    public NormalisableFloatFV() {
+public class CenterableNormalisableFloatFV extends FloatFV {
+    public CenterableNormalisableFloatFV() {
         super();
     }
 
-    public NormalisableFloatFV(float[] floats) {
+    public CenterableNormalisableFloatFV(float[] floats) {
         super(floats);
     }
 
-    public NormalisableFloatFV getNormalised() {
+    public CenterableNormalisableFloatFV getNormalised() {
         // Convert to vector of doubles.
         float[] vectorArray = this.values;
         // calculate mean of values.
@@ -40,7 +40,7 @@ public class NormalisableFloatFV extends FloatFV {
         }
 
         // Return new vector of normalised values.
-        return new NormalisableFloatFV(vectorArray);
+        return new CenterableNormalisableFloatFV(vectorArray);
     }
 
 }
