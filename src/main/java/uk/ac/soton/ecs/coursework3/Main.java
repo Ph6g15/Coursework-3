@@ -19,7 +19,7 @@ public class Main {
         VFSGroupDataset<FImage> trainingData = null;
         VFSListDataset<FImage> testingData = null;
         try {
-            trainingData = new VFSGroupDataset<>("C:\\Users\\PiersEpsilon\\Coursework-3\\training", ImageUtilities.FIMAGE_READER);
+            trainingData = new VFSGroupDataset<>("C:\\Users\\PiersEpsilon\\Coursework-3\\133", ImageUtilities.FIMAGE_READER);
             testingData = new VFSListDataset<>("zip:http://comp3204.ecs.soton.ac.uk/cw/testing.zip", ImageUtilities.FIMAGE_READER);
         } catch (FileSystemException e) {
             System.err.println("Could not load data from URL. Maybe the website is down or has moved.");
@@ -36,14 +36,14 @@ public class Main {
         System.out.println("Run 1 Classification Results are saved in Run1.txt ");
         // Run 2 classification.
 
-        //Map<String, String> run2Predictions = Run_2.run(trainingData, testingData);
+        ArrayList<String> run2Predictions = Run_2.run(trainingData, testingData);
         System.out.println("Run 2 Classification is complete");
         // Output run 2  guesses.
-        //ritePredictions(run2Predictions, "Run2.txt");
+        writePredictions(run2Predictions, "Run2.txt");
         System.out.println("Run 2 Classification Results are saved in Run2.txt ");
 
 //        // Run 3 classification.
-//        Map<String, String> run3Predictions = Run_3.run(trainingData, testingData);
+//       run3Predictions = Run_3.run(trainingData, testingData);
 //        // Output run 3  guesses.
 //        writePredictions(run3Predictions);
     }

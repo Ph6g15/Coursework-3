@@ -26,9 +26,7 @@ import org.openimaj.ml.kernel.HomogeneousKernelMap;
 import org.openimaj.util.pair.IntFloatPair;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Best Classifier.
@@ -41,7 +39,7 @@ public class Run_3 {
      * @param testingData Ungrouped test images.
      * @return Map of image file names to the predicted class.
      */
-    public static Map<String, String> run(VFSGroupDataset<FImage> trainingData, VFSListDataset<FImage> testingData) throws Exception {
+    public static ArrayList<String> run(VFSGroupDataset<FImage> trainingData, VFSListDataset<FImage> testingData) throws Exception {
         // Perform pyramid dense SIFT to apply normal dense SIFT to different sized windows.
         DenseSIFT dsift = new DenseSIFT(3, 7);
         PyramidDenseSIFT<FImage> pdsift = new PyramidDenseSIFT<>(dsift, 6f, 4, 6, 8, 10);
@@ -57,7 +55,7 @@ public class Run_3 {
         // Convert guesses to output format.
         double highestConfidence = 0;
         double confidence;
-        Map<String, String> predictions = new HashMap<>();
+        ArrayList<String> predictions = new ArrayList<String>();
         for (int i = 0; i < testingData.size(); i++) {
             FImage testImage = testingData.get(i);
             String imageName = testingData.getID(i);
@@ -71,7 +69,7 @@ public class Run_3 {
                     highestConfidence = confidence;
                 }
             }
-            predictions.put(imageName, String.valueOf(highestConfidence));
+            predictions.add(imageName+ " " +String.valueOf(highestConfidence));
         }
 
         return predictions;
