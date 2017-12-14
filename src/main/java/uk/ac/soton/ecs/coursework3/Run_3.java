@@ -16,9 +16,6 @@ import org.openimaj.feature.SparseIntFV;
 import org.openimaj.feature.local.data.LocalFeatureListDataSource;
 import org.openimaj.feature.local.list.LocalFeatureList;
 import org.openimaj.image.FImage;
-import org.openimaj.image.ImageUtilities;
-import org.openimaj.image.annotation.evaluation.datasets.Caltech101;
-import org.openimaj.image.annotation.evaluation.datasets.Caltech101.Record;
 import org.openimaj.image.feature.dense.gradient.dsift.ByteDSIFTKeypoint;
 import org.openimaj.image.feature.dense.gradient.dsift.DenseSIFT;
 import org.openimaj.image.feature.dense.gradient.dsift.PyramidDenseSIFT;
@@ -31,8 +28,8 @@ import org.openimaj.ml.clustering.assignment.HardAssigner;
 import org.openimaj.ml.clustering.kmeans.ByteKMeans;
 import org.openimaj.util.pair.IntFloatPair;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,35 +38,45 @@ import java.util.Map;
  */
 public class Run_3 {
     public static Map<String, String> run(VFSGroupDataset<FImage> trainingData, VFSListDataset<FImage> testingData) throws Exception {
-        // Get randomly split sample group from Caltech 101 data.
-        GroupedDataset<String, VFSListDataset<Record<FImage>>, Record<FImage>> allData = Caltech101.getData(ImageUtilities.FIMAGE_READER);
-        GroupedDataset<String, ListDataset<Record<FImage>>, Record<FImage>> data = GroupSampler.sample(allData, 5, false);
-        GroupedRandomSplitter<String, Record<FImage>> splits = new GroupedRandomSplitter<>(data, 15, 0, 15);
         // Perform pyramid dense SIFT to apply normal dense SIFT to different sized windows.
         DenseSIFT dsift = new DenseSIFT(5, 7);
         PyramidDenseSIFT<FImage> pdsift = new PyramidDenseSIFT<>(dsift, 6f, 7);
         // Train quantiser with random sample of 30 images across the training set.
-        HardAssigner<byte[], float[], IntFloatPair> assigner = trainQuantiser(GroupedUniformRandomisedSampler.sample(splits.getTrainingDataset(), 30), pdsift);
+        HardAssigner<byte[], float[], IntFloatPair> assigner = trainQuantiser(trainingData, pdsift);
         // Construct PHOW extractor.
-        FeatureExtractor<DoubleFV, Record<FImage>> extractor = new PHOWExtractor(pdsift, assigner);
+        FeatureExtractor<DoubleFV, FImage> extractor = new PHOWExtractor(pdsift, assigner);
         // Create and train classifier.
-        LiblinearAnnotator<Record<FImage>, String> ann = new LiblinearAnnotator<>(extractor, Mode.MULTICLASS, SolverType.L2R_L2LOSS_SVC, 1.0, 0.00001);
-        ann.train(splits.getTrainingDataset());
-        //
-        ClassificationEvaluator<CMResult<String>, String, Record<FImage>> eval = new ClassificationEvaluator<>(ann, splits.getTestDataset(), new CMAnalyser<Record<FImage>, String>(CMAnalyser.Strategy.SINGLE));
+        LiblinearAnnotator<FImage, String> annotator = new LiblinearAnnotator<>(extractor, Mode.MULTICLASS, SolverType.L2R_L2LOSS_SVC, 1.0, 0.00001);
+        annotator.train(trainingData);
 
-        Map<Record<FImage>, ClassificationResult<String>> guesses = eval.evaluate();
-        CMResult<String> result = eval.analyse(guesses);
-        System.out.println(result);
+        // Convert guesses to output format.
+        double highestConfidence = 0;
+        double confidence;
+        Map<String, String> predictions = new HashMap<>();
+        for (int i = 0; i < testingData.size(); i++) {
+            FImage testImage = testingData.get(i);
+            String imageName = testingData.getID(i);
 
-        return null;
+            ClassificationResult<String> prediction = annotator.classify(testImage);
+
+            // Add prediction to map.
+            for (String imageClass : prediction.getPredictedClasses()) {
+                confidence = prediction.getConfidence(imageClass);
+                if (confidence > highestConfidence) {
+                    highestConfidence = confidence;
+                }
+            }
+            predictions.put(imageName, String.valueOf(highestConfidence));
+        }
+
+        return predictions;
     }
 
-    // Build HardAssigner by performing K-Means clusterin on a sample of the SIFT features.
-    static HardAssigner<byte[], float[], IntFloatPair> trainQuantiser(Dataset<Record<FImage>> sample, PyramidDenseSIFT<FImage> pdsift) {
+    // Build HardAssigner by performing K-Means clustering on a sample of the SIFT features.
+    static HardAssigner<byte[], float[], IntFloatPair> trainQuantiser(Dataset<FImage> sample, PyramidDenseSIFT<FImage> pdsift) {
         List<LocalFeatureList<ByteDSIFTKeypoint>> allkeys = new ArrayList<>();
 
-        for (Record<FImage> rec : sample) {
+        for (FImage rec : sample) {
             FImage img = rec.getImage();
 
             pdsift.analyseImage(img);
@@ -86,7 +93,7 @@ public class Run_3 {
         return result.defaultHardAssigner();
     }
 
-    static class PHOWExtractor implements FeatureExtractor<DoubleFV, Record<FImage>> {
+    static class PHOWExtractor implements FeatureExtractor<DoubleFV, FImage> {
         PyramidDenseSIFT<FImage> pdsift;
         HardAssigner<byte[], float[], IntFloatPair> assigner;
 
@@ -96,7 +103,7 @@ public class Run_3 {
             this.assigner = assigner;
         }
 
-        public DoubleFV extractFeature(Record<FImage> object) {
+        public DoubleFV extractFeature(FImage object) {
             FImage image = object.getImage();
             pdsift.analyseImage(image);
 
