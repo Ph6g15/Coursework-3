@@ -63,13 +63,15 @@ public class Run_3 {
             ClassificationResult<String> prediction = annotator.classify(testImage);
 
             // Add prediction to map.
+            String bestguessSoFar = "unknown";
             for (String imageClass : prediction.getPredictedClasses()) {
                 confidence = prediction.getConfidence(imageClass);
                 if (confidence > highestConfidence) {
                     highestConfidence = confidence;
+                    bestguessSoFar = imageClass;
                 }
             }
-            predictions.add(imageName+ " " +String.valueOf(highestConfidence));
+            predictions.add(imageName+ " " +bestguessSoFar);
         }
 
         return predictions;

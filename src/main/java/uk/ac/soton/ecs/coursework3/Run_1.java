@@ -42,17 +42,8 @@ public class Run_1 {
         for (int i = 0; i < testingData.size(); i++) {
             FImage testImage = testingData.get(i);
             String imageName = testingData.getID(i);
-            double highestConfidence = 0;
-            double confidence;
-            String prediction = imageName + " " + getBestGuess(testImage, kNearestNeighbours, featureVectorClassPairs);
+            String prediction = imageName + " " + getBestGuess(testImage, kNearestNeighbours, featureVectorClassPairs,10);
 
-//            // Add prediction to map.
-//            for (String imageClass : prediction.getPredictedClasses()) {
-//                confidence = prediction.getConfidence(imageClass);
-//                if (confidence > highestConfidence) {
-//                    highestConfidence = confidence;
-//                }
-//            }
             predictions.add(prediction);
         }
 
@@ -62,13 +53,12 @@ public class Run_1 {
     /**
      * Return guess of image class
      */
-    private static String  getBestGuess(FImage image, FloatNearestNeighbours neighbours,FeatureVectorClassPairArrayList key) {
-        final int K = 15;
+    private static String  getBestGuess(FImage image, FloatNearestNeighbours neighbours,FeatureVectorClassPairArrayList key,int k) {
         // Extract feature vector.
         TinyImageVectorExtractor tinyImageVectorExtractor = new TinyImageVectorExtractor();
         FloatFV featureVector = tinyImageVectorExtractor.extractFeature(image);
         // Get k-nearest neighbours.
-        List<IntFloatPair> kNearestNeighbours = neighbours.searchKNN(featureVector.values, K);
+        List<IntFloatPair> kNearestNeighbours = neighbours.searchKNN(featureVector.values, k);
         // Map containing how many neighbours there are of each class.
         Map<String,Integer> classNeighbourCount = new HashMap<String,Integer>();
         for (IntFloatPair kNearestNeighbour: kNearestNeighbours) {
