@@ -50,7 +50,7 @@ public class Run_2 {
      */
     public static ArrayList<String> run(VFSGroupDataset<FImage> trainingData, VFSListDataset<FImage> testingData) throws Exception {
         // Train assigner.
-        HardAssigner<float[], float[], IntFloatPair> assigner = trainQuantiser(testingData, 500);
+        HardAssigner<float[], float[], IntFloatPair> assigner = trainQuantiser(testingData, 250);
         // Train linear classifier
         FeatureExtractor<DoubleFV, FImage> featureExtractor = new ClusteredPatchFeatureExtractor(assigner);
         LiblinearAnnotator<FImage, String> annotator = new LiblinearAnnotator<>(featureExtractor, LiblinearAnnotator.Mode.MULTICLASS, SolverType.L2R_L2LOSS_SVC, 1, 0.00001);
