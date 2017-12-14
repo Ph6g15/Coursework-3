@@ -48,7 +48,7 @@ public class Run_2 {
      * @param testingData Ungrouped test images.
      * @return Map of image file names to the predicted class.
      */
-    public static Map<String, String> run(VFSGroupDataset<FImage> trainingData, VFSListDataset<FImage> testingData) throws Exception {
+    public static ArrayList<String> run(VFSGroupDataset<FImage> trainingData, VFSListDataset<FImage> testingData) throws Exception {
         // Train assigner.
         HardAssigner<float[], float[], IntFloatPair> assigner = trainQuantiser(testingData, 500);
         // Train linear classifier
@@ -57,9 +57,10 @@ public class Run_2 {
         annotator.train(trainingData);
 
         // Perform guesses.
+
         double highestConfidence = 0;
         double confidence;
-        Map<String, String> predictions = new HashMap<>();
+        ArrayList<String> predictions = new ArrayList<>();
         for (int i = 0; i < testingData.size(); i++) {
             FImage testImage = testingData.get(i);
             String imageName = testingData.getID(i);
@@ -73,7 +74,7 @@ public class Run_2 {
                     highestConfidence = confidence;
                 }
             }
-            predictions.put(imageName, String.valueOf(highestConfidence));
+            predictions.add(imageName + " " + String.valueOf(highestConfidence));
         }
 
         return predictions;

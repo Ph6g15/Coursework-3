@@ -2,8 +2,6 @@ package uk.ac.soton.ecs.coursework3;
 
 import org.openimaj.data.dataset.VFSGroupDataset;
 import org.openimaj.data.dataset.VFSListDataset;
-import org.openimaj.experiment.evaluation.classification.BasicClassificationResult;
-import org.openimaj.experiment.evaluation.classification.ClassificationResult;
 import org.openimaj.feature.FeatureExtractor;
 import org.openimaj.feature.FloatFV;
 import org.openimaj.image.FImage;
@@ -46,7 +44,7 @@ public class Run_1 {
             String imageName = testingData.getID(i);
             double highestConfidence = 0;
             double confidence;
-            String prediction = imageName + getBestGuess(testImage, kNearestNeighbours, featureVectorClassPairs);
+            String prediction = imageName + "" + getBestGuess(testImage, kNearestNeighbours, featureVectorClassPairs);
 
 //            // Add prediction to map.
 //            for (String imageClass : prediction.getPredictedClasses()) {
