@@ -76,9 +76,15 @@ public class Run_1 {
         for (IntFloatPair kNearestNeighbour: kNearestNeighbours) {
             Integer index = kNearestNeighbour.getFirst();
             String neighbourClass = key.get(index).vectorClass;
-            Integer tempcount = classNeighbourCount.get(neighbourClass);
-            tempcount++;
-            classNeighbourCount.put(neighbourClass,tempcount);
+            if(classNeighbourCount.containsKey(neighbourClass)){
+                Integer tempcount = classNeighbourCount.get(neighbourClass);
+                tempcount++;
+                classNeighbourCount.put(neighbourClass,tempcount);
+            }
+            else {
+                classNeighbourCount.put(neighbourClass,1);
+            }
+
         }
         int maxneighboursofar = 0;
         String bestclassguess = "none";
