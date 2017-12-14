@@ -13,9 +13,7 @@ import org.openimaj.knn.FloatNearestNeighboursExact;
 import org.openimaj.util.array.ArrayUtils;
 import org.openimaj.util.pair.IntFloatPair;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * K-Nearest Neighbour Classifier.
@@ -48,16 +46,16 @@ public class Run_1 {
             String imageName = testingData.getID(i);
             double highestConfidence = 0;
             double confidence;
-            ClassificationResult<String> prediction = getBestGuess(testImage, kNearestNeighbours);
+            String prediction = getBestGuess(testImage, kNearestNeighbours, featureVectorClassPairs);
 
-            // Add prediction to map.
-            for (String imageClass : prediction.getPredictedClasses()) {
-                confidence = prediction.getConfidence(imageClass);
-                if (confidence > highestConfidence) {
-                    highestConfidence = confidence;
-                }
-            }
-            predictions.put(imageName, String.valueOf(highestConfidence));
+//            // Add prediction to map.
+//            for (String imageClass : prediction.getPredictedClasses()) {
+//                confidence = prediction.getConfidence(imageClass);
+//                if (confidence > highestConfidence) {
+//                    highestConfidence = confidence;
+//                }
+//            }
+            predictions.put(imageName, prediction);
         }
 
         return predictions;
@@ -66,36 +64,35 @@ public class Run_1 {
     /**
      * Return guess of image class
      */
-    private static BasicClassificationResult<String> getBestGuess(FImage image, FloatNearestNeighbours neighbours) {
+    private static String  getBestGuess(FImage image, FloatNearestNeighbours neighbours,FeatureVectorClassPairArrayList key) {
         final int K = 15;
         // Extract feature vector.
         TinyImageVectorExtractor tinyImageVectorExtractor = new TinyImageVectorExtractor();
-        // Convert feature vector to double array.
         FloatFV featureVector = tinyImageVectorExtractor.extractFeature(image);
-        featureVector.normaliseFV();
         // Get k-nearest neighbours.
         List<IntFloatPair> kNearestNeighbours = neighbours.searchKNN(featureVector.values, K);
         // Map containing how many neighbours there are of each class.
-        for (IntFloatPair kNearestNeighbour: kNearestNeighbours){
+        Map<String,Integer> classNeighbourCount = new HashMap<String,Integer>();
+        for (IntFloatPair kNearestNeighbour: kNearestNeighbours) {
+            Integer index = kNearestNeighbour.getFirst();
+            String neighbourClass = key.get(index).vectorClass;
+            Integer tempcount = classNeighbourCount.get(neighbourClass);
+            tempcount++;
+            classNeighbourCount.put(neighbourClass,tempcount);
+        }
+        int maxneighboursofar = 0;
+        String bestclassguess = "none";
+        Iterator<Map.Entry<String,Integer>> it= classNeighbourCount.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String,Integer> pair = it.next();
+            if(classNeighbourCount.get(pair.getKey())>maxneighboursofar){
+                maxneighboursofar = classNeighbourCount.get(pair.getKey());
+                bestclassguess = pair.getKey();
+            }
 
         }
-        // For each neighbour.
-
-        // Get class of neighbour.
-
-        // Increment count for class.
-
-        // Convert map to list in order to sort.
-
-        // Sort the list.
-
-        // Get confidence in result.
-
-        // Guess the class that is first in the list.
-
-        // Return result.
-
-        return null;
+        //Return Result
+        return bestclassguess;
     }
 
     static class TinyImageVectorExtractor implements FeatureExtractor<FloatFV, FImage> {
