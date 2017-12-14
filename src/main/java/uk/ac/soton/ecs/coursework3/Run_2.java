@@ -39,7 +39,7 @@ public class Run_2 {
     /**
      * Size of the moving patch.
      */
-    private static final int PATCH_SIZE = 12;
+    private static final int PATCH_SIZE = 24;
 
     /**
      * Linear classifier using bags of visual words features based on
@@ -106,7 +106,6 @@ public class Run_2 {
 
         // Perform K-means clustering.
         FloatCentroidsResult centroidsResult = kMeans.cluster(featureVectors.toArray(new float[][]{}));
-
         return centroidsResult.defaultHardAssigner();
     }
 
