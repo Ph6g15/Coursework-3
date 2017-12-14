@@ -5,8 +5,10 @@ import org.openimaj.data.dataset.VFSGroupDataset;
 import org.openimaj.data.dataset.VFSListDataset;
 import org.openimaj.image.FImage;
 import org.openimaj.image.ImageUtilities;
+import org.openrdf.query.algebra.Str;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -17,7 +19,7 @@ public class Main {
         VFSGroupDataset<FImage> trainingData = null;
         VFSListDataset<FImage> testingData = null;
         try {
-            trainingData = new VFSGroupDataset<>("zip:http://comp3204.ecs.soton.ac.uk/cw/training.zip", ImageUtilities.FIMAGE_READER);
+            trainingData = new VFSGroupDataset<>("C:\\Users\\PiersEpsilon\\Coursework-3\\training", ImageUtilities.FIMAGE_READER);
             testingData = new VFSListDataset<>("zip:http://comp3204.ecs.soton.ac.uk/cw/testing.zip", ImageUtilities.FIMAGE_READER);
         } catch (FileSystemException e) {
             System.err.println("Could not load data from URL. Maybe the website is down or has moved.");
@@ -27,7 +29,7 @@ public class Main {
         // Split group into test and training sets.
 
         // Run 1 classification.
-        Map<String, String> run1Predictions = Run_1.run(trainingData, testingData);
+        ArrayList<String> run1Predictions = Run_1.run(trainingData, testingData);
         // Output run 1  guesses.
         System.out.println("Run 1 Classification is complete");
         writePredictions(run1Predictions, "Run1.txt");
@@ -46,19 +48,12 @@ public class Main {
 //        writePredictions(run3Predictions);
     }
 
-    /**
-     *
-     * @param predictions Map of image file names to predicted classes.
-     * @param filename
-     * @throws Exception
-     */
-    public static void writePredictions(Map<String, String> predictions, String filename) throws Exception {
+    public static void writePredictions(ArrayList<String> predictions, String filename) throws Exception {
         // Write predictions to file.
         PrintWriter writer = new PrintWriter(filename, "UTF-8");
-        Iterator it = predictions.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
-            writer.println(pair.getKey() + " " + pair.getValue());
+
+        for (String s: predictions){
+            writer.println(s);
         }
         writer.close();
     }
