@@ -39,7 +39,7 @@ public class Run_2 {
     /**
      * Size of the moving patch.
      */
-    private static final int PATCH_SIZE = 24;
+    private static final int PATCH_SIZE = 12;
 
     /**
      * Linear classifier using bags of visual words features based on
