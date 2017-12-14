@@ -6,7 +6,9 @@ import org.openimaj.data.dataset.VFSListDataset;
 import org.openimaj.image.FImage;
 import org.openimaj.image.ImageUtilities;
 
+import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class Main {
@@ -27,12 +29,12 @@ public class Main {
         // Run 1 classification.
         Map<String, String> run1Predictions = Run_1.run(trainingData, testingData);
         // Output run 1  guesses.
-        writePredictions(run1Predictions);
+        writePredictions(run1Predictions, "Run1.txt");
 
         // Run 2 classification.
         Map<String, String> run2Predictions = Run_2.run(trainingData, testingData);
         // Output run 2  guesses.
-        writePredictions(run2Predictions);
+        writePredictions(run2Predictions, "Run2.txt");
 
 //        // Run 3 classification.
 //        Map<String, String> run3Predictions = Run_3.run(trainingData, testingData);
@@ -40,7 +42,14 @@ public class Main {
 //        writePredictions(run3Predictions);
     }
 
-    public static void writePredictions(Map<String, String> predictions) {
+    public static void writePredictions(Map<String, String> predictions, String filename) throws Exception {
         // Write predictions to file.
+        PrintWriter writer = new PrintWriter(filename, "UTF-8");
+        Iterator it = predictions.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            writer.println(pair.getKey() + " = " + pair.getValue());
+        }
+        writer.close();
     }
 }
