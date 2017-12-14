@@ -40,16 +40,15 @@ public class Run_1 {
         // Get k-nearest neighbour using training feature vectors.
         float [][] trainingVectors = featureVectorClassPairs.toFeatureVectorArray();
         FloatNearestNeighboursExact kNearestNeighbours = new FloatNearestNeighboursExact(trainingVectors);
-
         // Perform guesses.
-        double highestConfidence = 0;
-        double confidence;
+
         Map<String, String> predictions = new HashMap<>();
         for (int i = 0; i < testingData.size(); i++) {
             FImage testImage = testingData.get(i);
             String imageName = testingData.getID(i);
-
-            ClassificationResult<String> prediction = getGuess(testImage, kNearestNeighbours);
+            double highestConfidence = 0;
+            double confidence;
+            ClassificationResult<String> prediction = getBestGuess(testImage, kNearestNeighbours);
 
             // Add prediction to map.
             for (String imageClass : prediction.getPredictedClasses()) {
@@ -67,7 +66,7 @@ public class Run_1 {
     /**
      * Return guess of image class
      */
-    private static BasicClassificationResult<String> getGuess(FImage image, FloatNearestNeighbours neighbours) {
+    private static BasicClassificationResult<String> getBestGuess(FImage image, FloatNearestNeighbours neighbours) {
         final int K = 15;
         // Extract feature vector.
         TinyImageVectorExtractor tinyImageVectorExtractor = new TinyImageVectorExtractor();
@@ -77,15 +76,25 @@ public class Run_1 {
         // Get k-nearest neighbours.
         List<IntFloatPair> kNearestNeighbours = neighbours.searchKNN(featureVector.values, K);
         // Map containing how many neighbours there are of each class.
+        for (IntFloatPair kNearestNeighbour: kNearestNeighbours){
+
+        }
         // For each neighbour.
 
         // Get class of neighbour.
+
         // Increment count for class.
+
         // Convert map to list in order to sort.
+
         // Sort the list.
+
         // Get confidence in result.
+
         // Guess the class that is first in the list.
+
         // Return result.
+
         return null;
     }
 

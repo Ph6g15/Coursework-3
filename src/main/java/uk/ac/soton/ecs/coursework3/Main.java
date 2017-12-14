@@ -29,12 +29,16 @@ public class Main {
         // Run 1 classification.
         Map<String, String> run1Predictions = Run_1.run(trainingData, testingData);
         // Output run 1  guesses.
+        System.out.println("Run 1 Classification is complete");
         writePredictions(run1Predictions, "Run1.txt");
-
+        System.out.println("Run 1 Classification Results are saved in Run1.txt ");
         // Run 2 classification.
+
         Map<String, String> run2Predictions = Run_2.run(trainingData, testingData);
+        System.out.println("Run 2 Classification is complete");
         // Output run 2  guesses.
         writePredictions(run2Predictions, "Run2.txt");
+        System.out.println("Run 2 Classification Results are saved in Run2.txt ");
 
 //        // Run 3 classification.
 //        Map<String, String> run3Predictions = Run_3.run(trainingData, testingData);
@@ -48,7 +52,7 @@ public class Main {
         Iterator it = predictions.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry) it.next();
-            writer.println(pair.getKey() + " = " + pair.getValue());
+            writer.println(pair.getKey() + " " + pair.getValue());
         }
         writer.close();
     }
