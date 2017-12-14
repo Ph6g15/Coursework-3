@@ -45,7 +45,7 @@ public class Run_3 {
         // Perform pyramid dense SIFT to apply normal dense SIFT to different sized windows.
         DenseSIFT dsift = new DenseSIFT(3, 7);
         PyramidDenseSIFT<FImage> pdsift = new PyramidDenseSIFT<>(dsift, 6f, 4, 6, 8, 10);
-        // Train quantiser with random sample of 30 images across the training set.
+        // Train quantiser with the training set.
         HardAssigner<byte[], float[], IntFloatPair> assigner = trainQuantiser(trainingData, pdsift);
         // Construct PHOW extractor.
         HomogeneousKernelMap kernelMap = new HomogeneousKernelMap(HomogeneousKernelMap.KernelType.Chi2, HomogeneousKernelMap.WindowType.Rectangular);
