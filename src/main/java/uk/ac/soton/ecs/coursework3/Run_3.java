@@ -34,6 +34,13 @@ import java.util.Map;
  * Best Classifier.
  */
 public class Run_3 {
+    /**
+     *
+     *
+     * @param trainingData Training images grouped into their correct classifiers.
+     * @param testingData Ungrouped test images.
+     * @return Map of image file names to the predicted class.
+     */
     public static Map<String, String> run(VFSGroupDataset<FImage> trainingData, VFSListDataset<FImage> testingData) throws Exception {
         // Perform pyramid dense SIFT to apply normal dense SIFT to different sized windows.
         DenseSIFT dsift = new DenseSIFT(3, 7);

@@ -46,6 +46,12 @@ public class Main {
 //        writePredictions(run3Predictions);
     }
 
+    /**
+     *
+     * @param predictions Map of image file names to predicted classes.
+     * @param filename
+     * @throws Exception
+     */
     public static void writePredictions(Map<String, String> predictions, String filename) throws Exception {
         // Write predictions to file.
         PrintWriter writer = new PrintWriter(filename, "UTF-8");
