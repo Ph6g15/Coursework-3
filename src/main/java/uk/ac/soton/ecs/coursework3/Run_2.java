@@ -110,7 +110,8 @@ public class Run_2 {
     }
 
     /**
-     *
+     * Extract features from an image by looking at patches of the image and turning into
+     * feature vectors.
      *
      * @param image Image to extract patch features from.
      * @param step Distance that the patch moves on each iteration.
