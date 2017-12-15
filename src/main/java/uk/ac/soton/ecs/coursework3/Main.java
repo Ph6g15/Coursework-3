@@ -29,17 +29,17 @@ public class Main {
         // Split group into test and training sets.
 
         // Run 1 classification.
-        ArrayList<String> run1Predictions = Run_1.run(trainingData, testingData);
+        //ArrayList<String> run1Predictions = Run_1.run(trainingData, testingData);
         // Output run 1  guesses.
         System.out.println("Run 1 Classification is complete");
-        writePredictions(run1Predictions, "Run1.txt");
+       // writePredictions(run1Predictions, "Run1.txt");
         System.out.println("Run 1 Classification Results are saved in Run1.txt ");
         // Run 2 classification.
 
-        ArrayList<String> run2Predictions = Run_2.run(trainingData, testingData);
-        System.out.println("Run 2 Classification is complete");
+       // ArrayList<String> run2Predictions = Run_2.run(trainingData, testingData);
+       // System.out.println("Run 2 Classification is complete");
         // Output run 2  guesses.
-        writePredictions(run2Predictions, "Run2.txt");
+        //writePredictions(run2Predictions, "Run2.txt");
         System.out.println("Run 2 Classification Results are saved in Run2.txt ");
 
 //        // Run 3 classification.
