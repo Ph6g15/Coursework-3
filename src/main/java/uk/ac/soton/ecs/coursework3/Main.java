@@ -15,14 +15,14 @@ import java.util.Map;
 
 public class Main {
     public static void main(String args[]) throws Exception {
-        // Load the training and test data from URLs in the spec.
+        // Load the training and test data from arguments in commandline in the spec.
         VFSGroupDataset<FImage> trainingData = null;
         VFSListDataset<FImage> testingData = null;
         try {
-            trainingData = new VFSGroupDataset<>("C:\\Users\\PiersEpsilon\\Coursework-3\\training", ImageUtilities.FIMAGE_READER);
-            testingData = new VFSListDataset<>("C:\\Users\\PiersEpsilon\\Downloads\\testing", ImageUtilities.FIMAGE_READER);
+            trainingData = new VFSGroupDataset<>(args[0], ImageUtilities.FIMAGE_READER);
+            testingData = new VFSListDataset<>(args[1], ImageUtilities.FIMAGE_READER);
         } catch (FileSystemException e) {
-            System.err.println("Could not load data from URL. Maybe the website is down or has moved.");
+            System.err.println("Could not load data from File. Maybe the path is incorrect or has moved.");
             e.printStackTrace();
         }
         // Get group.
