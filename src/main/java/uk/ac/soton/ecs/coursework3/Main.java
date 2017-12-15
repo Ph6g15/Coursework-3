@@ -43,22 +43,22 @@ public class Main {
         System.out.println("Run 2 Classification Results are saved in Run2.txt ");
 
 //        // Run 3 classification.
-          ArrayList<String> run3Predictions = Run_3.run(trainingData, testingData);
+        ArrayList<String> run3Predictions = Run_3.run(trainingData, testingData);
 //        // Output run 3  guesses.
-         writePredictions(run3Predictions,"Run3.txt");
+        writePredictions(run3Predictions, "Run3.txt");
     }
 
     /**
      * Write the predictions as defined by the map to a file.
      *
      * @param predictions List of strings stating of image file names and their predicted classes.
-     * @param filename Name of file to write to.
+     * @param filename    Name of file to write to.
      */
     public static void writePredictions(ArrayList<String> predictions, String filename) throws Exception {
         // Write predictions to file.
         PrintWriter writer = new PrintWriter(filename, "UTF-8");
 
-        for (String s: predictions){
+        for (String s : predictions) {
             writer.println(s);
         }
         writer.close();

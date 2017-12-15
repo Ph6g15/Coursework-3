@@ -24,9 +24,9 @@ public class Run_1 {
         // For each class in training set.
         for (String className : trainingData.getGroups()) {
             // For each image in group.
+            TinyImageVectorExtractor tinyImageVectorExtractor = new TinyImageVectorExtractor();
             for (FImage image : trainingData.get(className)) {
                 // Extract tiny image feature vector from image.
-                TinyImageVectorExtractor tinyImageVectorExtractor = new TinyImageVectorExtractor();
                 CenterableNormalisableFloatFV tinyImageVector = tinyImageVectorExtractor.extractFeature(image);
                 tinyImageVector = tinyImageVector.getNormalised();
                 // Add feature and class name to array.
@@ -34,7 +34,7 @@ public class Run_1 {
             }
         }
         // Get k-nearest neighbour using training feature vectors.
-        float [][] trainingVectors = featureVectorClassPairs.toFeatureVectorArray();
+        float[][] trainingVectors = featureVectorClassPairs.toFeatureVectorArray();
         FloatNearestNeighboursExact kNearestNeighbours = new FloatNearestNeighboursExact(trainingVectors);
         // Perform guesses.
 
@@ -42,7 +42,7 @@ public class Run_1 {
         for (int i = 0; i < testingData.size(); i++) {
             FImage testImage = testingData.get(i);
             String imageName = testingData.getID(i);
-            String prediction = imageName + " " + getBestGuess(testImage, kNearestNeighbours, featureVectorClassPairs,10);
+            String prediction = imageName + " " + getBestGuess(testImage, kNearestNeighbours, featureVectorClassPairs, 38);
 
             predictions.add(prediction);
         }
@@ -53,7 +53,7 @@ public class Run_1 {
     /**
      * Return guess of image class
      */
-    private static String  getBestGuess(FImage image, FloatNearestNeighbours neighbours,FeatureVectorClassPairArrayList key,int k) {
+    private static String getBestGuess(FImage image, FloatNearestNeighbours neighbours, FeatureVectorClassPairArrayList key, int k) {
         // Extract feature vector.
         TinyImageVectorExtractor tinyImageVectorExtractor = new TinyImageVectorExtractor();
         CenterableNormalisableFloatFV featureVector = tinyImageVectorExtractor.extractFeature(image);
@@ -62,26 +62,25 @@ public class Run_1 {
         // Get k-nearest neighbours.
         List<IntFloatPair> kNearestNeighbours = neighbours.searchKNN(featureVector.values, k);
         // Map containing how many neighbours there are of each class.
-        Map<String,Integer> classNeighbourCount = new HashMap<String,Integer>();
-        for (IntFloatPair kNearestNeighbour: kNearestNeighbours) {
+        Map<String, Integer> classNeighbourCount = new HashMap<String, Integer>();
+        for (IntFloatPair kNearestNeighbour : kNearestNeighbours) {
             Integer index = kNearestNeighbour.getFirst();
             String neighbourClass = key.get(index).vectorClass;
-            if(classNeighbourCount.containsKey(neighbourClass)){
+            if (classNeighbourCount.containsKey(neighbourClass)) {
                 Integer tempcount = classNeighbourCount.get(neighbourClass);
                 tempcount++;
-                classNeighbourCount.put(neighbourClass,tempcount);
-            }
-            else {
-                classNeighbourCount.put(neighbourClass,1);
+                classNeighbourCount.put(neighbourClass, tempcount);
+            } else {
+                classNeighbourCount.put(neighbourClass, 1);
             }
 
         }
         int maxneighboursofar = 0;
         String bestclassguess = "none";
-        Iterator<Map.Entry<String,Integer>> it= classNeighbourCount.entrySet().iterator();
+        Iterator<Map.Entry<String, Integer>> it = classNeighbourCount.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<String,Integer> pair = it.next();
-            if(classNeighbourCount.get(pair.getKey())>maxneighboursofar){
+            Map.Entry<String, Integer> pair = it.next();
+            if (classNeighbourCount.get(pair.getKey()) > maxneighboursofar) {
                 maxneighboursofar = classNeighbourCount.get(pair.getKey());
                 bestclassguess = pair.getKey();
             }
