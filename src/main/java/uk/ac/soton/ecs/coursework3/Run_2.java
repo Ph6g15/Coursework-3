@@ -35,11 +35,11 @@ public class Run_2 {
     /**
      * Distance that moving rectangle moves after each iteration.
      */
-    private static final int STEP_SIZE = 8;
+    private static final int STEP_SIZE = 12;
     /**
      * Size of the moving patch.
      */
-    private static final int PATCH_SIZE = 24;
+    private static final int PATCH_SIZE = 18;
 
     /**
      * Linear classifier using bags of visual words features based on

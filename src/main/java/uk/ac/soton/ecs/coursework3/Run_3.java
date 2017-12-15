@@ -42,7 +42,7 @@ public class Run_3 {
     public static ArrayList<String> run(VFSGroupDataset<FImage> trainingData, VFSListDataset<FImage> testingData) throws Exception {
         // Perform pyramid dense SIFT to apply normal dense SIFT to different sized windows.
         DenseSIFT dsift = new DenseSIFT(3, 7);
-        PyramidDenseSIFT<FImage> pdsift = new PyramidDenseSIFT<>(dsift, 6f, 4, 6, 8, 10);
+        PyramidDenseSIFT<FImage> pdsift = new PyramidDenseSIFT<>(dsift, 6f, 7);
         // Train quantiser with the training set.
         HardAssigner<byte[], float[], IntFloatPair> assigner = trainQuantiser(trainingData, pdsift);
         // Construct PHOW extractor.

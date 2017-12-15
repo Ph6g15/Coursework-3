@@ -56,7 +56,9 @@ public class Run_1 {
     private static String  getBestGuess(FImage image, FloatNearestNeighbours neighbours,FeatureVectorClassPairArrayList key,int k) {
         // Extract feature vector.
         TinyImageVectorExtractor tinyImageVectorExtractor = new TinyImageVectorExtractor();
-        FloatFV featureVector = tinyImageVectorExtractor.extractFeature(image);
+        CenterableNormalisableFloatFV featureVector = tinyImageVectorExtractor.extractFeature(image);
+        //normalises and centres around mean for comparison
+        featureVector = featureVector.getNormalised();
         // Get k-nearest neighbours.
         List<IntFloatPair> kNearestNeighbours = neighbours.searchKNN(featureVector.values, k);
         // Map containing how many neighbours there are of each class.
